@@ -9,8 +9,11 @@ import (
 
 func main() {
 
+	// Prevent overshadowing
+	var err error
+
 	// Check for IPFS
-	ipfscmdpath, err := exec.LookPath("ipfs")
+	ipfscmdpath, err = exec.LookPath("ipfs")
 	if err != nil {
 		fmt.Println("IPFS is not installed.")
 		return
@@ -78,9 +81,10 @@ func processBuild(build Build) {
 	filepath := "https://mirrorbits.lineageos.org" + build.FilePath
 
 	// Prepare command
-	out, err := exec.Command(ipfscmdpath, "-t", "urlstore add "+filepath).Output()
+	out, err := exec.Command(ipfscmdpath, "urlstore add "+filepath, "-t").Output()
 	if err != nil {
 		fmt.Println("Couldn't execute the command.")
+		fmt.Println("Command :", ipfscmdpath, "urlstore add "+filepath, "-t")
 		fmt.Println(err.Error())
 		return
 	}
