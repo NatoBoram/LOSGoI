@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
+
+	"github.com/logrusorgru/aurora"
 )
 
 func main() {
