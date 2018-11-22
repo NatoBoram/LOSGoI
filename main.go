@@ -77,8 +77,13 @@ func getDevices() (devices *Devices, err error) {
 		return
 	}
 
-	// Log
-	fmt.Println("Received", len(*devices), "devices.")
+
+func countBuilds(devices Devices) (count int) {
+	for _, builds := range devices {
+		for range builds {
+			count++
+		}
+	}
 	return
 }
 
