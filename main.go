@@ -48,21 +48,21 @@ func main() {
 		go urlstore(w, jobs, results)
 	}
 
-	// Device
+	// Create queue
 	for device, builds := range devices {
 
-		// Add a device
+		// Add a device to the queue
 		fmt.Println("Adding device", aurora.Bold(device), "to the queue.")
 		for _, build := range builds {
 
-			// Add a build
+			// Add a build to the queue
 			fmt.Println("Adding build", aurora.Bold(build.FileName), "to the queue.")
 			jobs <- build
 		}
 	}
 	close(jobs)
 
-	// Hash
+	// Receive results from the workers
 	for i := 0; i < buildcount; i++ {
 		hashedBuild := <-results
 		fmt.Println(i, "/", buildcount, "|", hashedBuild.Hash, "|", hashedBuild.Build.FileName)
