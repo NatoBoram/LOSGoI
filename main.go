@@ -115,7 +115,8 @@ func urlstore(id int, builds <-chan Build, hash chan<- HashedBuild) {
 				fmt.Println("Command :", ipfsCmdName, "urlstore", "add", filepath, "-t")
 				fmt.Println(err.Error())
 				return
-			}*/
+			}
+		*/
 		out := "Test"
 
 		// Log
