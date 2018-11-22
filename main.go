@@ -5,20 +5,18 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"runtime"
 )
 
 func main() {
 
-	// Prevent overshadowing
-	var err error
-
 	// Check for IPFS
-	ipfscmdpath, err = exec.LookPath("ipfs")
+	ipfsCmdPath, err := exec.LookPath(ipfsCmdName)
 	if err != nil {
 		fmt.Println("IPFS is not installed.")
 		return
 	}
-	fmt.Println("IPFS :", ipfscmdpath)
+	fmt.Println("IPFS :", ipfsCmdPath)
 
 	// Devices
 	devices, err := getDevices()
@@ -28,12 +26,35 @@ func main() {
 		return
 	}
 
+	// Channels
+	jobs := make(chan Build)
+	results := make(chan string)
+
+	// Workers
+	for w := 1; w <= runtime.NumCPU(); w++ {
+		go urlstore(jobs, results)
+	}
+
 	// Device
 	for device, builds := range *devices {
 
-		// go processDevice(&device, &builds)
-		processDevice(&device, &builds)
+		// Log
+		fmt.Println("Adding device", device, "to the queue.")
 
+		// Build
+		for _, build := range builds {
+
+			// Log
+			fmt.Println("Adding build", build.FileName, "to the queue.")
+
+			jobs <- build
+		}
+	}
+	close(jobs)
+
+	// Hash
+	for hash := range results {
+		fmt.Println(hash)
 	}
 }
 
@@ -59,36 +80,25 @@ func getDevices() (devices *Devices, err error) {
 	return
 }
 
-func processDevice(device *string, builds *[]Build) {
+func urlstore(builds <-chan Build, hash chan<- string) {
 
-	// Log
-	fmt.Println("Processing device", *device+".")
+	for build := range builds {
 
-	// Build
-	for _, build := range *builds {
+		// Log
+		fmt.Println("Processing build", build.FileName)
 
-		// go processBuild(build)
-		processBuild(build)
+		// URL
+		filepath := "https://mirrorbits.lineageos.org" + build.FilePath
 
+		// Command
+		out, err := exec.Command(ipfsCmdName, "urlstore", "add", filepath, "-t").Output()
+		if err != nil {
+			fmt.Println("Couldn't execute the command.")
+			fmt.Println("Command :", ipfsCmdName, "urlstore", "add", filepath, "-t")
+			fmt.Println(err.Error())
+			return
+		}
+
+		hash <- string(out)
 	}
-}
-
-func processBuild(build Build) {
-
-	// Log
-	fmt.Println("Processing build", build.FileName)
-
-	filepath := "https://mirrorbits.lineageos.org" + build.FilePath
-
-	// Prepare command
-	out, err := exec.Command(ipfscmdpath, "urlstore add "+filepath, "-t").Output()
-	if err != nil {
-		fmt.Println("Couldn't execute the command.")
-		fmt.Println("Command :", ipfscmdpath, "urlstore add "+filepath, "-t")
-		fmt.Println(err.Error())
-		return
-	}
-
-	// Log
-	fmt.Println("Output : ", string(out))
 }
