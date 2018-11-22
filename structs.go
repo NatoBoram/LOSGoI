@@ -15,3 +15,10 @@ type Build struct {
 	Type     string `json:"type"`
 	Version  string `json:"version"`
 }
+
+// HashedBuild is a build and its hash.
+type HashedBuild struct {
+	Worker int
+	Build  *Build
+	Hash   string
+}

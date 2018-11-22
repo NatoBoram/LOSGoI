@@ -11,16 +11,18 @@ import (
 )
 
 func main() {
+	// workertest()
 
 	// Check for IPFS
 	ipfsCmdPath, err := exec.LookPath(ipfsCmdName)
 	if err != nil {
 		fmt.Println("IPFS is not installed.")
+		fmt.Println(err.Error())
 		return
 	}
 	fmt.Println("IPFS :", ipfsCmdPath)
 
-	// Devices
+	// Download device list
 	devices, err := getDevices()
 	if err != nil {
 		fmt.Println("Couldn't get a list of devices.")
@@ -28,39 +30,46 @@ func main() {
 		return
 	}
 
-	// Channels
-	jobs := make(chan Build)
-	results := make(chan string)
+	// Count devices and builds
+	fmt.Println("Received", aurora.Bold(len(devices)), "devices.")
+	buildcount := countBuilds(devices)
+	fmt.Println("Received", aurora.Bold(buildcount), "builds.")
 
-	// Workers
-	for w := 1; w <= runtime.NumCPU(); w++ {
-		go urlstore(jobs, results)
+	// Set an amount of workers
+	concurrency := runtime.NumCPU()
+	// concurrency := 1
+
+	// Create channels
+	jobs := make(chan Build, concurrency)
+	results := make(chan HashedBuild)
+
+	// Create workers
+	for w := 1; w <= concurrency; w++ {
+		go urlstore(w, jobs, results)
 	}
 
 	// Device
-	for device, builds := range *devices {
+	for device, builds := range devices {
 
-		// Log
-		fmt.Println("Adding device", device, "to the queue.")
-
-		// Build
+		// Add a device
+		fmt.Println("Adding device", aurora.Bold(device), "to the queue.")
 		for _, build := range builds {
 
-			// Log
-			fmt.Println("Adding build", build.FileName, "to the queue.")
-
+			// Add a build
+			fmt.Println("Adding build", aurora.Bold(build.FileName), "to the queue.")
 			jobs <- build
 		}
 	}
 	close(jobs)
 
 	// Hash
-	for hash := range results {
-		fmt.Println(hash)
+	for i := 0; i < buildcount; i++ {
+		hashedBuild := <-results
+		fmt.Println(i, "/", buildcount, "|", hashedBuild.Hash, "|", hashedBuild.Build.FileName)
 	}
 }
 
-func getDevices() (devices *Devices, err error) {
+func getDevices() (devices Devices, err error) {
 
 	// GET
 	resp, err := http.Get(api)
@@ -77,6 +86,8 @@ func getDevices() (devices *Devices, err error) {
 		return
 	}
 
+	return
+}
 
 func countBuilds(devices Devices) (count int) {
 	for _, builds := range devices {
@@ -87,25 +98,34 @@ func countBuilds(devices Devices) (count int) {
 	return
 }
 
-func urlstore(builds <-chan Build, hash chan<- string) {
+func urlstore(id int, builds <-chan Build, hash chan<- HashedBuild) {
 
 	for build := range builds {
 
 		// Log
-		fmt.Println("Processing build", build.FileName)
+		fmt.Println("Worker", aurora.Bold(id), "is processing the build", aurora.Bold(build.FileName).String()+".")
+		/*
+			// URL
+			filepath := mirrorbits + build.FilePath
 
-		// URL
-		filepath := "https://mirrorbits.lineageos.org" + build.FilePath
+			// Command
+			out, err := exec.Command(ipfsCmdName, "urlstore", "add", filepath, "-t").Output()
+			if err != nil {
+				fmt.Println("Couldn't execute the command.")
+				fmt.Println("Command :", ipfsCmdName, "urlstore", "add", filepath, "-t")
+				fmt.Println(err.Error())
+				return
+			}*/
+		out := "Test"
 
-		// Command
-		out, err := exec.Command(ipfsCmdName, "urlstore", "add", filepath, "-t").Output()
-		if err != nil {
-			fmt.Println("Couldn't execute the command.")
-			fmt.Println("Command :", ipfsCmdName, "urlstore", "add", filepath, "-t")
-			fmt.Println(err.Error())
-			return
+		// Log
+		fmt.Println("Worker", aurora.Bold(id), "finished processing the build", aurora.Bold(build.FileName).String()+".")
+
+		// Return
+		hash <- HashedBuild{
+			Worker: id,
+			Build:  &build,
+			Hash:   string(out),
 		}
-
-		hash <- string(out)
 	}
 }
