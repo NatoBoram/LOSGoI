@@ -50,7 +50,7 @@ func workertest() {
 }
 
 func testworker(id int, inputs <-chan string, outputDuration chan<- time.Duration, outputID chan<- int) {
-	for _ = range inputs {
+	for range inputs {
 		begin := time.Now()
 		time.Sleep(time.Duration(float64(time.Minute) * rand.New(rand.NewSource(time.Now().UnixNano())).Float64()))
 		outputDuration <- time.Since(begin)
