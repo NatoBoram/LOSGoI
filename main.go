@@ -5,13 +5,21 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
-	"runtime"
+	"sync"
+	"time"
 
 	"github.com/logrusorgru/aurora"
 )
 
 func main() {
-	// workertest()
+
+	// License
+	fmt.Println("")
+	fmt.Println("LOSGoI : LineageOS Goes to IPFS.")
+	fmt.Println("Copyright © 2019 Nato Boram")
+	fmt.Println("This program is free software : you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY ; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.")
+	fmt.Println("Contact : https://gitlab.com/NatoBoram/LOSGoI")
+	fmt.Println("")
 
 	// Check for IPFS
 	ipfsCmdPath, err := exec.LookPath(ipfsCmdName)
@@ -36,17 +44,31 @@ func main() {
 	fmt.Println("Received", aurora.Bold(buildcount), "builds.")
 
 	// Set an amount of workers
-	concurrency := runtime.NumCPU()
-	// concurrency := 1
+	// concurrency := runtime.NumCPU()
+	concurrency := 1
 
 	// Create channels
 	jobs := make(chan Build, concurrency)
 	results := make(chan HashedBuild)
+	mtx := sync.Mutex{}
 
 	// Create workers
 	for w := 1; w <= concurrency; w++ {
 		go urlstore(w, jobs, results)
 	}
+
+	mtx.Lock()
+	go func() {
+
+		// Receive results from the workers
+		for i := 0; i < buildcount; i++ {
+			hashedBuild := <-results
+			fmt.Println(i+1, "/", buildcount, "|", hashedBuild.Hash, "|", hashedBuild.Build.Filename)
+		}
+
+		time.Sleep(time.Second)
+		mtx.Unlock()
+	}()
 
 	// Create queue
 	for device, builds := range devices {
@@ -56,17 +78,13 @@ func main() {
 		for _, build := range builds {
 
 			// Add a build to the queue
-			fmt.Println("Adding build", aurora.Bold(build.FileName), "to the queue.")
+			fmt.Println("Adding build", aurora.Green(build.Filename), "to the queue.")
 			jobs <- build
 		}
 	}
 	close(jobs)
+	mtx.Lock() //jobs are done and results recieved
 
-	// Receive results from the workers
-	for i := 0; i < buildcount; i++ {
-		hashedBuild := <-results
-		fmt.Println(i, "/", buildcount, "|", hashedBuild.Hash, "|", hashedBuild.Build.FileName)
-	}
 }
 
 func getDevices() (devices Devices, err error) {
@@ -103,24 +121,24 @@ func urlstore(id int, builds <-chan Build, hash chan<- HashedBuild) {
 	for build := range builds {
 
 		// Log
-		fmt.Println("Worker", aurora.Bold(id), "is processing the build", aurora.Bold(build.FileName).String()+".")
-		/*
-			// URL
-			filepath := mirrorbits + build.FilePath
+		fmt.Println("Worker", aurora.Bold(id), "is processing the build", aurora.Green(build.Filename).String()+".")
 
-			// Command
-			out, err := exec.Command(ipfsCmdName, "urlstore", "add", filepath, "-t").Output()
-			if err != nil {
-				fmt.Println("Couldn't execute the command.")
-				fmt.Println("Command :", ipfsCmdName, "urlstore", "add", filepath, "-t")
-				fmt.Println(err.Error())
-				return
-			}
-		*/
-		out := "Test"
+		// URL
+		filepath := mirrorbits + build.Filepath
+
+		// Command
+		out, err := exec.Command(ipfsCmdName, "urlstore", "add", "-t", filepath).Output()
+		if err != nil {
+			fmt.Println("Worker", aurora.Bold(id), "failed to execute the command.")
+			fmt.Println("Command :", ipfsCmdName, "urlstore", "add", "-t", filepath)
+			fmt.Println(err.Error())
+			return
+		}
+
+		// out := "Test"
 
 		// Log
-		fmt.Println("Worker", aurora.Bold(id), "finished processing the build", aurora.Bold(build.FileName).String()+".")
+		fmt.Println("Worker", aurora.Bold(id), "finished processing the build", aurora.Green(build.Filename).String()+".")
 
 		// Return
 		hash <- HashedBuild{
