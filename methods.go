@@ -98,7 +98,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 	var t1 time.Time
 	var t2 time.Time
 
-	err = db.QueryRow("select `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.Hash)
+	err = db.QueryRow("select `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
 
 	bh.Build.Date = BuildDate(t1)
 	bh.Build.Datetime = BuildDateTime(t2)
@@ -128,13 +128,13 @@ func (build Build) Hash(index int, total int) {
 	// Finished
 	go BuildHash{
 		Build: &build,
-		Hash:  string(out),
+		IPFS:  string(out),
 	}.Save()
 }
 
 // Save the BuildHash to the database.
 func (buildHash BuildHash) Save() {
-	_, err := db.Exec("insert into `builds`(`date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", time.Time(buildHash.Build.Date), time.Time(buildHash.Build.Datetime), buildHash.Build.Filename, buildHash.Build.Filepath, buildHash.Build.Sha1, buildHash.Build.Sha256, buildHash.Build.Size, buildHash.Build.Type, buildHash.Build.Version, buildHash.Hash)
+	_, err := db.Exec("insert into `builds`(`date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", time.Time(buildHash.Build.Date), time.Time(buildHash.Build.Datetime), buildHash.Build.Filename, buildHash.Build.Filepath, buildHash.Build.Sha1, buildHash.Build.Sha256, buildHash.Build.Size, buildHash.Build.Type, buildHash.Build.Version, buildHash.IPFS)
 	if err != nil {
 		fmt.Println("Couldn't save build", aurora.Green(buildHash.Build.Filename).String()+".")
 		fmt.Println(err.Error())

@@ -29,7 +29,7 @@ type Build struct {
 // BuildHash is a build and its hash.
 type BuildHash struct {
 	Build *Build
-	Hash  string
+	IPFS  string
 }
 
 // Database hosts the database configuration.
