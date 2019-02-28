@@ -23,7 +23,7 @@ func (database Database) IsEmpty() bool {
 
 // ToConnectionString creates a connection string from a `Database`.
 func (database Database) ToConnectionString() string {
-	return database.User + ":" + database.Password + "@tcp(" + database.Address + ":" + strconv.Itoa(database.Port) + ")/" + database.Database
+	return database.User + ":" + database.Password + "@tcp(" + database.Address + ":" + strconv.Itoa(database.Port) + ")/" + database.Database + "?parseTime=true"
 }
 
 // UnmarshalJSON parses a formatted string and returns the time value it represents.
@@ -59,6 +59,15 @@ func (bdt BuildDateTime) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bdt)
 }
 
+// Name every builds from every devices.
+func (devices Devices) Name() {
+	for device, builds := range devices {
+		for _, build := range builds {
+			build.Device = device
+		}
+	}
+}
+
 // Count every builds from every devices.
 func (devices Devices) Count() (count int) {
 	for _, builds := range devices {
@@ -80,7 +89,7 @@ func (devices Devices) Hash() {
 			// Check if it needs to be hashed.
 			_, err := build.Select()
 			if err == sql.ErrNoRows {
-				build.Hash(index, total)
+				build.Hash(float64(index), float64(total))
 			} else if err != nil {
 				fmt.Println("Couldn't select build", aurora.Green(build.Filename).String()+".")
 				fmt.Println(err.Error())
@@ -98,7 +107,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 	var t1 time.Time
 	var t2 time.Time
 
-	err = db.QueryRow("select `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
+	err = db.QueryRow("select `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `device` = ? and `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", build.Device, time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&bh.Build.Device, &t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
 
 	bh.Build.Date = BuildDate(t1)
 	bh.Build.Datetime = BuildDateTime(t2)
@@ -107,7 +116,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 }
 
 // Hash this build then save it.
-func (build Build) Hash(index int, total int) {
+func (build Build) Hash(index float64, total float64) {
 
 	// Log
 	fmt.Println("Processing the build", aurora.Green(build.Filename).String()+".")
@@ -123,7 +132,7 @@ func (build Build) Hash(index int, total int) {
 	}
 
 	// Log
-	fmt.Println(aurora.Bold(strconv.Itoa(index/total*100)+"%"), "|", aurora.Cyan(string(out)), "|", aurora.Green(build.Filename))
+	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Cyan(string(out)), "|", aurora.Green(build.Filename))
 
 	// Finished
 	go BuildHash{
@@ -134,7 +143,7 @@ func (build Build) Hash(index int, total int) {
 
 // Save the BuildHash to the database.
 func (buildHash BuildHash) Save() {
-	_, err := db.Exec("insert into `builds`(`date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", time.Time(buildHash.Build.Date), time.Time(buildHash.Build.Datetime), buildHash.Build.Filename, buildHash.Build.Filepath, buildHash.Build.Sha1, buildHash.Build.Sha256, buildHash.Build.Size, buildHash.Build.Type, buildHash.Build.Version, buildHash.IPFS)
+	_, err := db.Exec("insert into `builds`(`device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", buildHash.Build.Device, time.Time(buildHash.Build.Date), time.Time(buildHash.Build.Datetime), buildHash.Build.Filename, buildHash.Build.Filepath, buildHash.Build.Sha1, buildHash.Build.Sha256, buildHash.Build.Size, buildHash.Build.Type, buildHash.Build.Version, buildHash.IPFS)
 	if err != nil {
 		fmt.Println("Couldn't save build", aurora.Green(buildHash.Build.Filename).String()+".")
 		fmt.Println(err.Error())
