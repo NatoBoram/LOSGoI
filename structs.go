@@ -15,6 +15,7 @@ type BuildDateTime time.Time
 
 // Build is a single build from LineageOS.
 type Build struct {
+	Device   string
 	Date     BuildDate     `json:"date"`
 	Datetime BuildDateTime `json:"datetime"`
 	Filename string        `json:"filename"`

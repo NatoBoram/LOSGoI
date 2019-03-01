@@ -136,5 +136,7 @@ func getDevices() (devices Devices, err error) {
 		return
 	}
 
+	devices.Name()
+
 	return
 }
