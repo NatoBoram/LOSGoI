@@ -80,19 +80,21 @@ func (devices Devices) Count() (count int) {
 
 // Hash every builds from every devices.
 func (devices Devices) Hash() {
-	index := 1
-	total := devices.Count()
+	index := float64(1)
+	total := float64(devices.Count())
 
 	for _, builds := range devices {
 		for _, build := range builds {
 
 			// Check if it needs to be hashed.
-			_, err := build.Select()
+			bh, err := build.Select()
 			if err == sql.ErrNoRows {
-				build.Hash(float64(index), float64(total))
+				build.Hash(index, total)
 			} else if err != nil {
 				fmt.Println("Couldn't select build", aurora.Green(build.Filename).String()+".")
 				fmt.Println(err.Error())
+			} else {
+				fmt.Println("Skipping", aurora.Green(bh.Build.Filename).String()+".")
 			}
 
 			index++
@@ -121,6 +123,7 @@ func (build Build) Hash(index float64, total float64) {
 
 	// Log
 	fmt.Println("Processing the build", aurora.Green(build.Filename).String()+".")
+	start := time.Now()
 
 	// Add URL to ipfs without storing the data locally.
 	filepath := mirrorbits + build.Filepath
@@ -133,7 +136,7 @@ func (build Build) Hash(index float64, total float64) {
 	}
 
 	// Log
-	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Cyan(string(out)), "|", aurora.Green(build.Filename))
+	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(string(out)), "|", time.Since(start).String())
 
 	// Finished
 	go BuildHash{
@@ -154,22 +157,26 @@ func (buildHash BuildHash) Save() {
 
 // Pin a build to the local IPFS gateway.
 func (buildHash BuildHash) Pin() {
-	err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).Run()
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).CombinedOutput()
 	if err != nil {
 		fmt.Println("Failed to pin a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(buildHash.IPFS), "--name", aurora.Green(buildHash.Build.Filename))
 		fmt.Println(err.Error())
 		return
 	}
+
+	fmt.Println(string(out))
 }
 
 // Unpin a build to the local IPFS gateway.
 func (buildHash BuildHash) Unpin() {
-	err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).Run()
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).CombinedOutput()
 	if err != nil {
 		fmt.Println("Failed to pin a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "rm", aurora.Cyan(buildHash.IPFS))
 		fmt.Println(err.Error())
 		return
 	}
+
+	fmt.Println(string(out))
 }

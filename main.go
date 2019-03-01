@@ -29,12 +29,6 @@ func main() {
 		return
 	}
 
-	// IPFS Cluster
-	err = initIPFSCluster()
-	if err != nil {
-		return
-	}
-
 	// Database
 	err = initDatabase()
 	if err != nil {
@@ -42,6 +36,7 @@ func main() {
 	}
 	defer db.Close()
 
+	// Put LineageOS on IPFS
 	for {
 		work()
 		unpin()
@@ -53,15 +48,13 @@ func main() {
 func initIPFS() (err error) {
 
 	// Check for IPFS
-	ipfsCmdPath, err := exec.LookPath("ipfs")
+	path, err := exec.LookPath("ipfs")
 	if err != nil {
 		fmt.Println("IPFS is not installed.")
 		fmt.Println(err.Error())
 		return
 	}
-
-	// Log
-	fmt.Println(aurora.Bold("IPFS :"), aurora.Blue(ipfsCmdPath))
+	fmt.Println(aurora.Bold("IPFS :"), aurora.Blue(path))
 
 	// Use experimental features
 	exec.Command("ipfs", "config", "--json", "Experimental.FilestoreEnabled", "true").Run()
@@ -71,22 +64,25 @@ func initIPFS() (err error) {
 	exec.Command("ipfs", "config", "--json", "Experimental.ShardingEnabled", "true").Run()
 	exec.Command("ipfs", "config", "--json", "Experimental.UrlstoreEnabled", "true").Run()
 
-	return
-}
-
-func initIPFSCluster() (err error) {
-
-	// Check for IPFS
-	ipfsCmdPath, err := exec.LookPath("ipfs-cluster-ctl")
+	// Check for IPFS Cluster Service
+	path, err = exec.LookPath("ipfs-cluster-service")
 	if err != nil {
-		fmt.Println("IPFS Cluster is not installed.")
+		fmt.Println("IPFS Cluster Service is not installed.")
 		fmt.Println(err.Error())
 		return
 	}
+	fmt.Println(aurora.Bold("IPFS Cluster Service :"), aurora.Blue(path))
 
-	// Log
-	fmt.Println(aurora.Bold("IPFS-Cluster :"), aurora.Blue(ipfsCmdPath))
+	// Check for IPFS Cluster Control
+	path, err = exec.LookPath("ipfs-cluster-ctl")
+	if err != nil {
+		fmt.Println("IPFS Cluster Control is not installed.")
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(aurora.Bold("IPFS Cluster Control :"), aurora.Blue(path))
 
+	fmt.Println("")
 	return
 }
 
@@ -142,6 +138,7 @@ func work() {
 	fmt.Println("Received", aurora.Bold(len(devices)), "devices.")
 	buildcount := devices.Count()
 	fmt.Println("Received", aurora.Bold(buildcount), "builds.")
+	fmt.Println("")
 
 	// Hash builds
 	devices.Hash()
