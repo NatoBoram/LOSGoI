@@ -89,7 +89,7 @@ func (devices Devices) Hash() {
 			// Check if it needs to be hashed.
 			bh, err := build.Select()
 			if err == sql.ErrNoRows {
-				build.Hash(index, total)
+				build.Hash(float64(index), float64(total))
 			} else if err != nil {
 				fmt.Println("Couldn't select build", aurora.Green(build.Filename).String()+".")
 				fmt.Println(err.Error())
