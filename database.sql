@@ -1,4 +1,6 @@
-CREATE TABLE `builds`(
+DROP TABLE IF EXISTS `builds`;
+CREATE TABLE IF NOT EXISTS `builds`(
+    `device` VARCHAR(16) NOT NULL,
     `date` DATE NOT NULL,
     `datetime` DATETIME NOT NULL,
     `filename` VARCHAR(64) NOT NULL,
