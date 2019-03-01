@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/logrusorgru/aurora"
@@ -28,6 +29,12 @@ func main() {
 		return
 	}
 
+	// IPFS Cluster
+	err = initIPFSCluster()
+	if err != nil {
+		return
+	}
+
 	// Database
 	err = initDatabase()
 	if err != nil {
@@ -35,7 +42,12 @@ func main() {
 	}
 	defer db.Close()
 
-	work()
+	for {
+		work()
+		unpin()
+		pin()
+		time.Sleep(time.Hour)
+	}
 }
 
 func initIPFS() (err error) {
@@ -58,6 +70,22 @@ func initIPFS() (err error) {
 	exec.Command("ipfs", "config", "--json", "Experimental.QUIC", "true").Run()
 	exec.Command("ipfs", "config", "--json", "Experimental.ShardingEnabled", "true").Run()
 	exec.Command("ipfs", "config", "--json", "Experimental.UrlstoreEnabled", "true").Run()
+
+	return
+}
+
+func initIPFSCluster() (err error) {
+
+	// Check for IPFS
+	ipfsCmdPath, err := exec.LookPath("ipfs-cluster-ctl")
+	if err != nil {
+		fmt.Println("IPFS Cluster is not installed.")
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Log
+	fmt.Println(aurora.Bold("IPFS-Cluster :"), aurora.Blue(ipfsCmdPath))
 
 	return
 }
@@ -136,7 +164,32 @@ func getDevices() (devices Devices, err error) {
 		return
 	}
 
+	// Builds are received in a map.
 	devices.Name()
 
 	return
+}
+
+func pin() {
+
+	bhs, err := getLatestBuilds()
+	if err != nil {
+		return
+	}
+
+	for _, bh := range bhs {
+		bh.Pin()
+	}
+}
+
+func unpin() {
+
+	bhs, err := getOldBuilds()
+	if err != nil {
+		return
+	}
+
+	for _, bh := range bhs {
+		bh.Unpin()
+	}
 }

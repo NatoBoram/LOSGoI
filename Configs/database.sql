@@ -1,3 +1,5 @@
+USE `LOSGoI`;
+-- Builds
 DROP TABLE IF EXISTS `builds`;
 CREATE TABLE IF NOT EXISTS `builds`(
     `device` VARCHAR(16) NOT NULL,
@@ -12,3 +14,22 @@ CREATE TABLE IF NOT EXISTS `builds`(
     `version` VARCHAR(8) NOT NULL,
     `ipfs` VARCHAR(128) NOT NULL PRIMARY KEY
 );
+-- Latest Builds
+DROP VIEW `builds_latest`;
+CREATE VIEW `builds_latest` AS
+SELECT
+    `device`,
+    `date`,
+    MAX(`datetime`) `datetime`,
+    `filename`,
+    `filepath`,
+    `sha1`,
+    `sha256`,
+    `size`,
+    `type`,
+    `version`,
+    `ipfs`
+FROM
+    `builds`
+GROUP BY
+    `device`;

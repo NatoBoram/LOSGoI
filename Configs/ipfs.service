@@ -1,0 +1,10 @@
+[Unit]
+Description=Inter-Planetary File System
+
+[Service]
+ExecStart=/snap/bin/ipfs daemon
+ExecStop=/snap/bin/ipfs shutdown
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

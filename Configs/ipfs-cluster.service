@@ -1,0 +1,9 @@
+[Unit]
+Description=Inter-Planetary File System Cluster
+
+[Service]
+ExecStart=/snap/bin/ipfs-cluster-service daemon
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

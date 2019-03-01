@@ -103,6 +103,7 @@ func (devices Devices) Hash() {
 // Select this build from the database.
 func (build Build) Select() (bh BuildHash, err error) {
 
+	// Prevent null pointers
 	bh = BuildHash{Build: &Build{}}
 	var t1 time.Time
 	var t2 time.Time
@@ -146,6 +147,28 @@ func (buildHash BuildHash) Save() {
 	_, err := db.Exec("insert into `builds`(`device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", buildHash.Build.Device, time.Time(buildHash.Build.Date), time.Time(buildHash.Build.Datetime), buildHash.Build.Filename, buildHash.Build.Filepath, buildHash.Build.Sha1, buildHash.Build.Sha256, buildHash.Build.Size, buildHash.Build.Type, buildHash.Build.Version, buildHash.IPFS)
 	if err != nil {
 		fmt.Println("Couldn't save build", aurora.Green(buildHash.Build.Filename).String()+".")
+		fmt.Println(err.Error())
+		return
+	}
+}
+
+// Pin a build to the local IPFS gateway.
+func (buildHash BuildHash) Pin() {
+	err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).Run()
+	if err != nil {
+		fmt.Println("Failed to pin a build.")
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(buildHash.IPFS), "--name", aurora.Green(buildHash.Build.Filename))
+		fmt.Println(err.Error())
+		return
+	}
+}
+
+// Unpin a build to the local IPFS gateway.
+func (buildHash BuildHash) Unpin() {
+	err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).Run()
+	if err != nil {
+		fmt.Println("Failed to pin a build.")
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "rm", aurora.Cyan(buildHash.IPFS))
 		fmt.Println(err.Error())
 		return
 	}

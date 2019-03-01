@@ -1,0 +1,9 @@
+[Unit]
+Description=LineageOS Goes to IPFS
+
+[Service]
+ExecStart=/root/go/bin/LOSGoI
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
