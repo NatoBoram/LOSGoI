@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `builds`(
     `ipfs` VARCHAR(128) NOT NULL PRIMARY KEY
 );
 -- Latest Builds
-DROP VIEW `builds_latest`;
+DROP VIEW IF EXISTS `builds_latest`;
 CREATE VIEW `builds_latest` AS
 SELECT
     `device`,
@@ -33,3 +33,12 @@ FROM
     `builds`
 GROUP BY
     `device`;
+-- Remove garbage from builds
+update
+    `builds`
+set
+    `ipfs` = replace(ipfs, char(13), '');
+update
+    `builds`
+set
+    `ipfs` = replace(ipfs, char(10), '');
