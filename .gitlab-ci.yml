@@ -1,0 +1,15 @@
+image: golang:1.12
+
+before_script:
+  - go get -u -v -fix gitlab.com/NatoBoram/LOSGoI
+  - go clean
+
+build:
+  stage: build
+  script:
+    - go build
+
+test:
+  stage: test
+  script:
+    - go test ./...
