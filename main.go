@@ -172,6 +172,8 @@ func getDevices() (devices Devices, err error) {
 }
 
 func pin() {
+	fmt.Println("Pinning latest builds...")
+	start := time.Now()
 
 	bhs, err := getLatestBuilds()
 	if err != nil {
@@ -181,9 +183,13 @@ func pin() {
 	for _, bh := range bhs {
 		bh.Pin()
 	}
+
+	fmt.Println("Pinned latest builds in", time.Since(start).String()+".")
 }
 
 func unpin() {
+	fmt.Println("Unpinning old builds...")
+	start := time.Now()
 
 	bhs, err := getOldBuilds()
 	if err != nil {
@@ -193,4 +199,6 @@ func unpin() {
 	for _, bh := range bhs {
 		bh.Unpin()
 	}
+
+	fmt.Println("Unpinned old builds in", time.Since(start).String()+".")
 }

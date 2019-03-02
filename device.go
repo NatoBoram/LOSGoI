@@ -66,5 +66,5 @@ func (devices Devices) Hash() {
 		index++
 	}
 
-	fmt.Println("Finished in", aurora.Bold(time.Since(start).String()).String()+".")
+	fmt.Println("Hashed in", aurora.Bold(time.Since(start).String()).String()+".")
 }
