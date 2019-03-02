@@ -163,10 +163,17 @@ func (buildHash BuildHash) Save() {
 
 // Pin a build to the local IPFS gateway.
 func (buildHash BuildHash) Pin() {
-	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).Output()
+	size := buildHash.Build.Size
+	speed := 10 * 1024 * 1024
+	seconds := 60
+
+	min := strconv.Itoa(size/(seconds*speed) + 1)
+	max := strconv.Itoa(size/speed + 1)
+
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename, "--replication-min", min, "--replication-max", max).Output()
 	if err != nil {
 		fmt.Println("Failed to pin a build.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(buildHash.IPFS), "--name", aurora.Green(buildHash.Build.Filename))
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(buildHash.IPFS), "--name", aurora.Green(buildHash.Build.Filename), "--replication-min", min, "--replication-max", max)
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
