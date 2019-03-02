@@ -184,7 +184,7 @@ func pin() {
 		bh.Pin()
 	}
 
-	fmt.Println("Pinned latest builds in", time.Since(start).String()+".")
+	fmt.Println("Pinned latest builds in", aurora.Bold(time.Since(start).String()).String()+".")
 }
 
 func unpin() {
@@ -200,5 +200,5 @@ func unpin() {
 		bh.Unpin()
 	}
 
-	fmt.Println("Unpinned old builds in", time.Since(start).String()+".")
+	fmt.Println("Unpinned old builds in", aurora.Bold(time.Since(start).String()).String()+".")
 }
