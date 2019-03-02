@@ -90,11 +90,15 @@ func initDatabase() (err error) {
 
 	// Read the database config
 	var database Database
-	err = readDatabase(&database)
+	err = database.read()
 	if err != nil {
 		fmt.Println("Could not load the database configuration.")
 		fmt.Println(err.Error())
-		writeTemplateDatabase()
+		err = database.template()
+		if err != nil {
+			fmt.Println("Could not write a database template.")
+			fmt.Println(err.Error())
+		}
 		return
 	}
 
@@ -106,7 +110,7 @@ func initDatabase() (err error) {
 	}
 
 	// Connect to MariaDB
-	db, err = sql.Open("mysql", database.ToConnectionString())
+	db, err = sql.Open("mysql", database.string())
 	if err != nil {
 		fmt.Println("Could not connect to the database.")
 		fmt.Println(err.Error())
