@@ -82,6 +82,7 @@ func (devices Devices) Count() (count int) {
 func (devices Devices) Hash() {
 	index := float64(1)
 	total := float64(devices.Count())
+	start := time.Now()
 
 	for _, builds := range devices {
 		for _, build := range builds {
@@ -100,6 +101,8 @@ func (devices Devices) Hash() {
 			index++
 		}
 	}
+
+	fmt.Println("Finished in", aurora.Bold(time.Since(start).String()).String()+".")
 }
 
 // Select this build from the database.
@@ -135,13 +138,16 @@ func (build Build) Hash(index float64, total float64) {
 		return
 	}
 
+	// Remove garbage
+	hash := strings.Trim(string(out), "\n")
+
 	// Log
-	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(string(out)), "|", time.Since(start).String())
+	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(hash), "|", time.Since(start).String())
 
 	// Finished
 	go BuildHash{
 		Build: &build,
-		IPFS:  string(out),
+		IPFS:  hash,
 	}.Save()
 }
 
@@ -157,24 +163,36 @@ func (buildHash BuildHash) Save() {
 
 // Pin a build to the local IPFS gateway.
 func (buildHash BuildHash) Pin() {
-	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).CombinedOutput()
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename).Output()
 	if err != nil {
 		fmt.Println("Failed to pin a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(buildHash.IPFS), "--name", aurora.Green(buildHash.Build.Filename))
-		fmt.Println(err.Error())
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+
 		return
 	}
 
 	fmt.Println(string(out))
 }
 
-// Unpin a build to the local IPFS gateway.
+// Unpin a build from the local IPFS gateway.
 func (buildHash BuildHash) Unpin() {
-	out, err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).CombinedOutput()
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).Output()
 	if err != nil {
-		fmt.Println("Failed to pin a build.")
+		fmt.Println("Failed to unpin a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "rm", aurora.Cyan(buildHash.IPFS))
-		fmt.Println(err.Error())
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+
 		return
 	}
 
