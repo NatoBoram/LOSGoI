@@ -44,8 +44,6 @@ func (buildHash BuildHash) Pin() {
 		if ok {
 			fmt.Println(string(ee.Stderr))
 		}
-
-		return
 	}
 
 	fmt.Println(string(out))
@@ -63,8 +61,6 @@ func (buildHash BuildHash) Unpin() {
 		if ok {
 			fmt.Println(string(ee.Stderr))
 		}
-
-		return
 	}
 
 	fmt.Println(string(out))

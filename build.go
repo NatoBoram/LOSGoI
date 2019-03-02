@@ -91,9 +91,16 @@ func (build Build) Hash(index float64, total float64) {
 	filepath := mirrorbits + build.Filepath
 	out, err := exec.Command("ipfs", "urlstore", "add", filepath).Output()
 	if err != nil {
-		fmt.Println("Failed to execute the command.")
+		fmt.Println("Failed to download a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs", "urlstore", "add", aurora.Blue(filepath))
-		fmt.Println(err.Error())
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+
+		fmt.Println(string(out))
 		return
 	}
 
