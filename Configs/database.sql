@@ -34,11 +34,11 @@ FROM
 GROUP BY
     `device`;
 -- Remove garbage from builds
-update
+UPDATE
     `builds`
-set
-    `ipfs` = replace(ipfs, char(13), '');
-update
+SET
+    `ipfs` = REPLACE (ipfs, CHAR(13), '');
+UPDATE
     `builds`
-set
-    `ipfs` = replace(ipfs, char(10), '');
+SET
+    `ipfs` = REPLACE (ipfs, CHAR(10), '');
