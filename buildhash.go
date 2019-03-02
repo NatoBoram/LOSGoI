@@ -31,8 +31,8 @@ func (buildHash BuildHash) Pin() {
 	speed := 10 * 1024 * 1024
 	seconds := 60
 
-	min := strconv.Itoa(size/(seconds*speed) + 1)
-	max := strconv.Itoa(size/speed + 1)
+	min := strconv.Itoa(1)
+	max := strconv.Itoa(size/(seconds*speed) + 1)
 
 	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename, "--replication-min", min, "--replication-max", max).Output()
 	if err != nil {
