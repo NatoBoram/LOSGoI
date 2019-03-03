@@ -64,6 +64,11 @@ func initIPFS() (err error) {
 	exec.Command("ipfs", "config", "--json", "Experimental.ShardingEnabled", "true").Run()
 	exec.Command("ipfs", "config", "--json", "Experimental.UrlstoreEnabled", "true").Run()
 
+	// Enable new Swarm features
+	exec.Command("ipfs", "config", "--json", "Swarm.EnableAutoNATService", "true").Run()
+	exec.Command("ipfs", "config", "--json", "Swarm.EnableAutoRelay", "true").Run()
+	exec.Command("ipfs", "config", "--json", "Swarm.EnableRelayHop", "true").Run()
+
 	// Check for IPFS Cluster Service
 	path, err = exec.LookPath("ipfs-cluster-service")
 	if err != nil {
