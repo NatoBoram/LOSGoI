@@ -39,6 +39,7 @@ func main() {
 	// Put LineageOS on IPFS
 	for {
 		work()
+		recover()
 		unpin()
 		pin()
 		time.Sleep(time.Hour)
@@ -206,4 +207,20 @@ func unpin() {
 	}
 
 	fmt.Println("Unpinned old builds in", aurora.Bold(time.Since(start).String()).String()+".")
+}
+
+func recover() {
+	out, err := exec.Command("ipfs-cluster-ctl", "recover", "--local").Output()
+	if err != nil {
+		fmt.Println("Failed to recover.")
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "recover", "--local")
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+	}
+
+	fmt.Println(string(out))
 }
