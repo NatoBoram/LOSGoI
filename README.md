@@ -1,5 +1,9 @@
 # LOSGoI
 
+[![Pipeline Status](https://gitlab.com/NatoBoram/LOSGoI/badges/master/pipeline.svg)](https://gitlab.com/NatoBoram/LOSGoI/commits/master)
+[![Go Report Card](https://goreportcard.com/badge/gitlab.com/NatoBoram/LOSGoI)](https://goreportcard.com/report/gitlab.com/NatoBoram/LOSGoI)
+[![GoDoc](https://godoc.org/gitlab.com/NatoBoram/LOSGoI?status.svg)](https://godoc.org/gitlab.com/NatoBoram/LOSGoI)
+
 **LOSGoI**, short for **L**ineage**OS** **Go**es to **I**PFS, is a Go daemon that hashes [LineageOS](https://download.lineageos.org/) builds using [URLStore](https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#ipfs-urlstore).
 
 It provides a way to access LineageOS' builds after they're removed from the website, assuming there are people who pinned the hashes. **As such, it is an unreliable service to be used only as a proof-of-concept.**
