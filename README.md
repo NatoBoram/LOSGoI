@@ -14,7 +14,7 @@ This program will invoke the command `ipfs urlstore add <url>`. As such, you mus
 
 This program will attempt to pin the hashes it created to the local [IPFS Cluster](https://github.com/ipfs/ipfs-cluster) with the command `ipfs-cluster-ctl pin add <hash> --name <build> --replication-min <min> --replication-max <max>`.
 
-Replication factors are calculated as following : 
+Replication factors are calculated as following :
 
 ```Go
 size := buildHash.Build.Size
