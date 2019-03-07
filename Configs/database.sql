@@ -19,8 +19,8 @@ DROP VIEW IF EXISTS `builds_latest`;
 CREATE VIEW `builds_latest` AS
 SELECT
     `device`,
-    `date`,
-    MAX(`datetime`) `datetime`,
+    MAX(`date`) `date`,
+    `datetime`,
     `filename`,
     `filepath`,
     `sha1`,
