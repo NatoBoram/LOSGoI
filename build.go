@@ -89,10 +89,10 @@ func (build Build) Hash(index float64, total float64) {
 
 	// Add URL to ipfs without storing the data locally.
 	filepath := mirrorbits + build.Filepath
-	out, err := exec.Command("ipfs", "urlstore", "add", "--pin=false", filepath).Output()
+	out, err := exec.Command("ipfs", "urlstore", "add", filepath).Output()
 	if err != nil {
 		fmt.Println("Failed to download a build.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs", "urlstore", "add", "--pin=false", aurora.Blue(filepath))
+		fmt.Println(aurora.Bold("Command :"), "ipfs", "urlstore", "add", aurora.Blue(filepath))
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
