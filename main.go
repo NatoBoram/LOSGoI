@@ -42,6 +42,7 @@ func main() {
 		recover()
 		unpin()
 		pin()
+		gc()
 		time.Sleep(time.Hour)
 	}
 }
@@ -214,6 +215,22 @@ func recover() {
 	if err != nil {
 		fmt.Println("Failed to recover.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "recover", "--local")
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+	}
+
+	fmt.Println(string(out))
+}
+
+func gc() {
+	out, err := exec.Command("ipfs", "gc").Output()
+	if err != nil {
+		fmt.Println("Failed to recover.")
+		fmt.Println(aurora.Bold("Command :"), "ipfs", "gc")
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
