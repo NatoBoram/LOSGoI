@@ -87,9 +87,9 @@ func (build Build) Hash(index float64, total float64) {
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
 	start := time.Now()
 
-	// Add URL to ipfs without storing the data locally.
+	// Add the file to IPFS
 	filepath := mirrorbits + build.Filepath
-	out, err := exec.Command("ipfs", "urlstore", "add", filepath).Output()
+	out, err := exec.Command("ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", filepath).Output()
 	if err != nil {
 		fmt.Println("Failed to download a build.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs", "urlstore", "add", aurora.Blue(filepath))
@@ -105,7 +105,9 @@ func (build Build) Hash(index float64, total float64) {
 	}
 
 	// Remove garbage
-	hash := strings.Trim(string(out), "\n")
+	slice := strings.Fields(string(out))
+	hash := slice[len(slice)-1]
+	hash = strings.Trim(hash, "\n")
 
 	// Log
 	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(hash), "|", time.Since(start).String())
