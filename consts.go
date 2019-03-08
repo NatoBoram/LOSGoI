@@ -17,3 +17,7 @@ const (
 	permPrivateDirectory os.FileMode = 0700
 	permPrivateFile      os.FileMode = 0600
 )
+
+const (
+	hashEmptyFolder = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn"
+)
