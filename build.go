@@ -109,6 +109,14 @@ func (build Build) Hash(index float64, total float64) {
 	hash := slice[len(slice)-1]
 	hash = strings.Trim(hash, "\n")
 
+	// Check for "empty folder" hash
+	if hash == hashEmptyFolder {
+		gc()
+		unpin()
+		gc()
+		return
+	}
+
 	// Log
 	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(hash), "|", time.Since(start).String())
 
