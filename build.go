@@ -83,16 +83,20 @@ func (build Build) Select() (bh BuildHash, err error) {
 // Hash this build then save it.
 func (build Build) Hash(index float64, total float64) {
 
+	// Will be overwritten by `pin()`.
+	const min = "1"
+	const max = "1"
+
 	// Log
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
 	start := time.Now()
 
 	// Add the file to IPFS
 	filepath := mirrorbits + build.Filepath
-	out, err := exec.Command("ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", filepath).Output()
+	out, err := exec.Command("ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--replication-min", min, "--replication-max", max, filepath).Output()
 	if err != nil {
 		fmt.Println("Failed to download a build.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs", "urlstore", "add", aurora.Blue(filepath))
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--replication-min", min, "--replication-max", max, aurora.Blue(filepath))
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
