@@ -2,7 +2,7 @@
 Description=Inter-Planetary File System
 
 [Service]
-ExecStart=/snap/bin/ipfs daemon
+ExecStart=/snap/bin/ipfs daemon --enable-gc=true --migrate=true
 ExecStop=/snap/bin/ipfs shutdown
 Restart=on-failure
 
