@@ -27,12 +27,12 @@ func (buildHash BuildHash) Save() {
 
 // Pin a build to the local IPFS cluster.
 func (buildHash BuildHash) Pin() {
+	const speed = 10 * 1024 * 1024
+	const seconds = 60
 	size := buildHash.Build.Size
-	speed := 10 * 1024 * 1024
-	seconds := 60
 
 	min := strconv.Itoa(1)
-	max := strconv.Itoa(size/(seconds*speed) + 1)
+	max := strconv.Itoa(size/(speed*seconds) + 1)
 
 	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", buildHash.IPFS, "--name", buildHash.Build.Filename, "--replication-min", min, "--replication-max", max).Output()
 	if err != nil {
