@@ -38,11 +38,11 @@ func main() {
 
 	// Put LineageOS on IPFS
 	for {
-		work()
+		add()
 		recover()
 		unpin()
-		pin()
 		gc()
+		pin()
 		time.Sleep(time.Hour)
 	}
 }
@@ -135,7 +135,7 @@ func initDatabase() (err error) {
 	return
 }
 
-func work() {
+func add() {
 
 	// Download device list
 	devices, err := getDevices()
