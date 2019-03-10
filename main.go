@@ -227,10 +227,10 @@ func recover() {
 }
 
 func gc() {
-	out, err := exec.Command("ipfs", "gc").Output()
+	out, err := exec.Command("ipfs", "repo", "gc").Output()
 	if err != nil {
 		fmt.Println("Failed to recover.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs", "gc")
+		fmt.Println(aurora.Bold("Command :"), "ipfs", "repo", "gc")
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
