@@ -38,11 +38,11 @@ func main() {
 
 	// Put LineageOS on IPFS
 	for {
-		add()
 		recover()
+		pin()
 		unpin()
 		gc()
-		pin()
+		add()
 		time.Sleep(time.Hour)
 	}
 }
