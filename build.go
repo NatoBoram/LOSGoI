@@ -115,18 +115,36 @@ func (build Build) Hash(index float64, total float64) {
 
 	// Check for "empty folder" hash
 	if hash == hashEmptyFolder {
-		gc()
 		unpin()
-		gc()
 		return
 	}
 
 	// Log
 	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(hash), "|", time.Since(start).String())
 
-	// Finished
-	go BuildHash{
+	bh := BuildHash{
 		Build: &build,
 		IPFS:  hash,
-	}.Save()
+	}
+
+	// Save to the database
+	go bh.Save()
+
+	// Pin
+	news, err := getLatestBuildsFromDevice(bh)
+	if err != nil {
+		return
+	}
+	for _, new := range news {
+		go new.Pin()
+	}
+
+	// Unpin
+	olds, err := getOldBuildsFromDevice(bh)
+	if err != nil {
+		return
+	}
+	for _, old := range olds {
+		go old.Unpin()
+	}
 }
