@@ -49,34 +49,12 @@ func (buildHash BuildHash) Pin() {
 	fmt.Println(string(out))
 }
 
-// Unpin a build from the local IPFS cluster and IPFS node.
+// Unpin a build from the local IPFS cluster.
 func (buildHash BuildHash) Unpin() {
-	go buildHash.UnpinFromCluster()
-	buildHash.UnpinFromNode()
-}
-
-// UnpinFromCluster unpins a build from the local IPFS cluster.
-func (buildHash BuildHash) UnpinFromCluster() {
 	out, err := exec.Command("ipfs-cluster-ctl", "pin", "rm", buildHash.IPFS).Output()
 	if err != nil {
 		fmt.Println("Failed to unpin a build from the cluster.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "rm", aurora.Cyan(buildHash.IPFS))
-
-		// Log the error from the command
-		ee, ok := err.(*exec.ExitError)
-		if ok {
-			fmt.Println(string(ee.Stderr))
-		}
-	}
-	fmt.Println(string(out))
-}
-
-// UnpinFromNode unpins a build from the local IPFS node.
-func (buildHash BuildHash) UnpinFromNode() {
-	out, err := exec.Command("ipfs", "pin", "rm", buildHash.IPFS).Output()
-	if err != nil {
-		fmt.Println("Failed to unpin a build from the node.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs", "pin", "rm", aurora.Cyan(buildHash.IPFS))
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
