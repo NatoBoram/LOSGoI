@@ -41,7 +41,6 @@ func main() {
 		recover()
 		pin()
 		unpin()
-		gc()
 		add()
 		time.Sleep(time.Hour)
 	}
@@ -208,6 +207,8 @@ func unpin() {
 	}
 
 	fmt.Println("Unpinned old builds in", aurora.Bold(time.Since(start).String()).String()+".")
+
+	gc()
 }
 
 func recover() {
@@ -227,6 +228,9 @@ func recover() {
 }
 
 func gc() {
+	fmt.Println("Starting garbage collection...")
+	start := time.Now()
+
 	out, err := exec.Command("ipfs", "repo", "gc").Output()
 	if err != nil {
 		fmt.Println("Failed to recover.")
@@ -240,4 +244,5 @@ func gc() {
 	}
 
 	fmt.Println(string(out))
+	fmt.Println("Garbage collected in", aurora.Bold(time.Since(start).String()).String()+".")
 }
