@@ -57,14 +57,20 @@ func (devices Devices) Hash() {
 	// Skip known builds
 	builds := devices.Trim()
 
-	index := float64(1)
-	total := float64(len(builds))
+	// Progression
+	index := 1
+	total := len(builds)
 	start := time.Now()
 
 	for _, build := range builds {
 		build.Hash(float64(index), float64(total))
+
+		// Estimated Time Left
+		fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index, total)).String()+".")
+
 		index++
 	}
 
+	// Duration
 	fmt.Println("Hashed in", aurora.Bold(time.Since(start).String()).String()+".")
 }
