@@ -128,7 +128,7 @@ func (build Build) Hash(index float64, total float64) {
 	}
 
 	// Save to the database
-	go bh.Save()
+	bh.Save()
 
 	// Pin
 	news, err := getLatestBuildsFromDevice(bh)
