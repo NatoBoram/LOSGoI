@@ -246,3 +246,7 @@ func gc() {
 	fmt.Println(string(out))
 	fmt.Println("Garbage collected in", aurora.Bold(time.Since(start).String()).String()+".")
 }
+
+func eta(start time.Time, index int, total int) (left time.Duration) {
+	return time.Since(start) / (time.Duration(index) * time.Millisecond) * (time.Duration(total-index) * time.Millisecond)
+}
