@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"strconv"
 	"time"
 
 	"github.com/logrusorgru/aurora"
@@ -47,17 +46,11 @@ func (bh BuildHash) Save() {
 
 // Pin a build to the local IPFS cluster.
 func (bh BuildHash) Pin() {
-	const speed = 10 * 1024 * 1024
-	const seconds = 60
-	size := bh.Build.Size
 
-	min := strconv.Itoa(1)
-	max := strconv.Itoa(size/(speed*seconds) + 1)
-
-	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", bh.IPFS, "--name", bh.Build.Filename, "--replication-min", min, "--replication-max", max).Output()
+	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", bh.IPFS, "--name", bh.Build.Filename, "--replication-min", bh.Build.RMin(), "--replication-max", bh.Build.RMax()).Output()
 	if err != nil {
 		fmt.Println("Failed to pin a build.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(bh.IPFS), "--name", aurora.Green(bh.Build.Filename), "--replication-min", min, "--replication-max", max)
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "pin", "add", aurora.Cyan(bh.IPFS), "--name", aurora.Green(bh.Build.Filename), "--replication-min", bh.Build.RMin(), "--replication-max", bh.Build.RMax())
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)

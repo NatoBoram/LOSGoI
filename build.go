@@ -83,20 +83,16 @@ func (build Build) Select() (bh BuildHash, err error) {
 // Hash this build then save it.
 func (build Build) Hash(index float64, total float64) (bh BuildHash) {
 
-	// Will be overwritten by `pin()`.
-	const min = "1"
-	const max = "1"
-
 	// Log
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
 	start := time.Now()
 
 	// Add the file to IPFS
 	filepath := mirrorbits + build.Filepath
-	out, err := exec.Command("ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--name", build.Filename, "--replication-min", min, "--replication-max", max, filepath).Output()
+	out, err := exec.Command("ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--name", build.Filename, "--replication-min", build.RMin(), "--replication-max", build.RMax(), filepath).Output()
 	if err != nil {
 		fmt.Println("Failed to download a build.")
-		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--name", aurora.Green(build.Filename), "--replication-min", min, "--replication-max", max, aurora.Blue(filepath))
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "add", "-w", "--chunker=rabin", "--name", aurora.Green(build.Filename), "--replication-min", build.RMin(), "--replication-max", build.RMax(), aurora.Blue(filepath))
 
 		// Log the error from the command
 		ee, ok := err.(*exec.ExitError)
@@ -126,4 +122,14 @@ func (build Build) Hash(index float64, total float64) (bh BuildHash) {
 		Build: &build,
 		IPFS:  hash,
 	}
+}
+
+// RMin is the minimum replication factor for a given build.
+func (build Build) RMin() string {
+	return strconv.Itoa(1)
+}
+
+// RMax is the maximum replication factor for a given build.
+func (build Build) RMax() string {
+	return strconv.Itoa(build.Size/(speed*seconds) + 1)
 }
