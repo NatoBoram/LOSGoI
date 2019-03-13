@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -262,57 +261,39 @@ func eta(start time.Time, index int, total int) (left time.Duration) {
 }
 
 func readd() {
-
+	fmt.Println("Recovering lost builds...")
 	start := time.Now()
-	index := 1
 
 	bhs, err := getLatestBuilds()
 	if err != nil {
 		return
 	}
 
-	// Prepare channel
-	bc := make(chan *Build, concurrency)
-	var wg sync.WaitGroup
+	var builds []*Build
+	for _, bh := range bhs {
 
-	// Select builds for re-hashing
-	go func() {
-		for _, bh := range bhs {
-
-			// Get this build's status
-			out, err := exec.Command("ipfs-cluster-ctl", "status", bh.IPFS).Output()
-			if err != nil {
-				return
-			}
-
-			// Check for not "PINNED"
-			if !strings.Contains(string(out), "PINNED") {
-
-				// Cluster lost this build
-				bc <- bh.Build
-			}
+		// Get this build's status
+		out, err := exec.Command("ipfs-cluster-ctl", "status", bh.IPFS).Output()
+		if err != nil {
+			return
 		}
 
-		close(bc)
-	}()
+		// Check for not "PINNED"
+		if !strings.Contains(string(out), "PINNED") {
 
-	// Create workers
-	for c := 0; c < concurrency; c++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for build := range bc {
-				build.Hash(index, len(bc))
-
-				// Estimated Time Left
-				fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index+1, len(bc))).String()+".")
-
-				index++
-			}
-		}()
+			// Cluster lost this build
+			builds = append(builds, bh.Build)
+		}
 	}
 
-	wg.Wait()
+	total := len(builds)
+	for index, build := range builds {
+
+		build.Hash(index, total)
+
+		// Estimated Time Left
+		fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index+1, total)).String()+".")
+	}
 
 	// Duration
 	fmt.Println("Hashed in", aurora.Bold(time.Since(start).String()).String()+".")
