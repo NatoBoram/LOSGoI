@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -221,7 +222,7 @@ func unpin() {
 }
 
 func recover() {
-	sync()
+	ctlsync()
 
 	_, err := exec.Command("ipfs-cluster-ctl", "recover", "--local").Output()
 	if err != nil {
@@ -263,52 +264,60 @@ func eta(start time.Time, index int, total int) (left time.Duration) {
 func readd() {
 
 	start := time.Now()
+	index := 1
+
 	bhs, err := getLatestBuilds()
 	if err != nil {
 		return
 	}
 
-	// Trim builds that don't need re-hashing
-	var toHash []BuildHash
-	for _, bh := range bhs {
+	bc := make(chan *Build, concurrency)
+	var wg sync.WaitGroup
 
-		// Get this build's status
-		out, err := exec.Command("ipfs-cluster-ctl", "status", bh.IPFS).Output()
-		if err != nil {
-			return
+	// Select builds for re-hashing
+	go func() {
+		for _, bh := range bhs {
+
+			// Get this build's status
+			out, err := exec.Command("ipfs-cluster-ctl", "status", bh.IPFS).Output()
+			if err != nil {
+				return
+			}
+
+			// Check for not "PINNED"
+			if !strings.Contains(string(out), "PINNED") {
+
+				// Cluster lost this build
+				bc <- bh.Build
+			}
 		}
 
-		// Check for not "PINNED"
-		if !strings.Contains(string(out), "PINNED") {
-
-			// Cluster lost this build
-			toHash = append(toHash, bh)
-		}
-	}
-
-	total := len(toHash)
-
-	// Add to queue
-	bhc := make(chan BuildHash, 4)
-	for index, bh := range toHash {
-		go func(bh BuildHash, index int) {
-			bhc <- bh.Build.Hash(index, total)
-		}(bh, index)
-	}
+		close(bc)
+	}()
 
 	// Execute queue
-	for index := range toHash {
-		<-bhc
+	for c := 0; c < concurrency; c++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for build := range bc {
+				build.Hash(index, len(bc))
 
-		// Estimated Time Left
-		fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index+1, total)).String()+".")
+				// Estimated Time Left
+				fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index+1, len(bc))).String()+".")
+
+				index++
+			}
+		}()
 	}
+
+	wg.Wait()
 
 	// Duration
 	fmt.Println("Hashed in", aurora.Bold(time.Since(start).String()).String()+".")
 }
 
-func sync() {
+func ctlsync() {
 	_, err := exec.Command("ipfs-cluster-ctl", "sync").Output()
 	if err != nil {
 		fmt.Println("Failed to sync.")

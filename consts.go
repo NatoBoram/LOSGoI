@@ -28,3 +28,5 @@ const (
 	speed   = 10 * 1024 * 1024
 	seconds = 60
 )
+
+const concurrency = 4
