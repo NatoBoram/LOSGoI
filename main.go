@@ -144,6 +144,7 @@ func initDatabase() (err error) {
 }
 
 func add() {
+	fmt.Println("Adding new builds to the cluster...")
 
 	// Download device list
 	devices, err := getDevices()
