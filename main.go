@@ -271,6 +271,7 @@ func readd() {
 		return
 	}
 
+	// Prepare channel
 	bc := make(chan *Build, concurrency)
 	var wg sync.WaitGroup
 
@@ -295,7 +296,7 @@ func readd() {
 		close(bc)
 	}()
 
-	// Execute queue
+	// Create workers
 	for c := 0; c < concurrency; c++ {
 		wg.Add(1)
 		go func() {
