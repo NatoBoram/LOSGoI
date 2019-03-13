@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/exec"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,6 +39,7 @@ func main() {
 
 	// Put LineageOS on IPFS
 	for {
+		readd()
 		recover()
 		pin()
 		unpin()
@@ -212,7 +214,9 @@ func unpin() {
 }
 
 func recover() {
-	out, err := exec.Command("ipfs-cluster-ctl", "recover", "--local").Output()
+	sync()
+
+	_, err := exec.Command("ipfs-cluster-ctl", "recover", "--local").Output()
 	if err != nil {
 		fmt.Println("Failed to recover.")
 		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "recover", "--local")
@@ -223,8 +227,6 @@ func recover() {
 			fmt.Println(string(ee.Stderr))
 		}
 	}
-
-	fmt.Println(string(out))
 }
 
 func gc() {
@@ -249,4 +251,54 @@ func gc() {
 
 func eta(start time.Time, index int, total int) (left time.Duration) {
 	return time.Since(start) / (time.Duration(index) * time.Millisecond) * (time.Duration(total-index) * time.Millisecond)
+}
+
+func readd() {
+	bhs, err := getLatestBuilds()
+	if err != nil {
+		return
+	}
+
+	// Progression
+	index := 1
+	total := len(bhs)
+	start := time.Now()
+
+	for _, bh := range bhs {
+
+		// Get this build's status
+		out, err := exec.Command("ipfs-cluster-ctl", "status", bh.IPFS).Output()
+		if err != nil {
+			return
+		}
+
+		// Check for not "PINNED"
+		if !strings.Contains(string(out), "PINNED") {
+
+			// Cluster lost this build
+			bh.Build.Hash(float64(index), float64(total))
+
+			// Estimated Time Left
+			fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index, total)).String()+".")
+		}
+
+		index++
+	}
+
+	// Duration
+	fmt.Println("Hashed in", aurora.Bold(time.Since(start).String()).String()+".")
+}
+
+func sync() {
+	_, err := exec.Command("ipfs-cluster-ctl", "sync").Output()
+	if err != nil {
+		fmt.Println("Failed to sync.")
+		fmt.Println(aurora.Bold("Command :"), "ipfs-cluster-ctl", "sync")
+
+		// Log the error from the command
+		ee, ok := err.(*exec.ExitError)
+		if ok {
+			fmt.Println(string(ee.Stderr))
+		}
+	}
 }
