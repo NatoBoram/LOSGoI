@@ -39,11 +39,18 @@ func main() {
 
 	// Put LineageOS on IPFS
 	for {
-		readd()
+
+		// Recover
 		recover()
 		pin()
 		unpin()
+		readd()
+
+		// Add new builds
+		unpin()
 		add()
+
+		// Give some rest to LineageOS
 		time.Sleep(time.Hour)
 	}
 }
@@ -254,16 +261,15 @@ func eta(start time.Time, index int, total int) (left time.Duration) {
 }
 
 func readd() {
+
+	start := time.Now()
 	bhs, err := getLatestBuilds()
 	if err != nil {
 		return
 	}
 
-	// Progression
-	index := 1
-	total := len(bhs)
-	start := time.Now()
-
+	// Trim builds that don't need re-hashing
+	var toHash []BuildHash
 	for _, bh := range bhs {
 
 		// Get this build's status
@@ -276,13 +282,26 @@ func readd() {
 		if !strings.Contains(string(out), "PINNED") {
 
 			// Cluster lost this build
-			bh.Build.Hash(float64(index), float64(total))
-
-			// Estimated Time Left
-			fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index, total)).String()+".")
+			toHash = append(toHash, bh)
 		}
+	}
 
-		index++
+	total := len(toHash)
+
+	// Add to queue
+	bhc := make(chan BuildHash, 4)
+	for index, bh := range toHash {
+		go func(bh BuildHash, index int) {
+			bhc <- bh.Build.Hash(index, total)
+		}(bh, index)
+	}
+
+	// Execute queue
+	for index := range toHash {
+		<-bhc
+
+		// Estimated Time Left
+		fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index+1, total)).String()+".")
 	}
 
 	// Duration
@@ -301,4 +320,8 @@ func sync() {
 			fmt.Println(string(ee.Stderr))
 		}
 	}
+}
+
+func percent(index int, total int) string {
+	return fmt.Sprintf("%3.2f%%", float64(index)/float64(total)*100)
 }

@@ -81,7 +81,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 }
 
 // Hash this build then save it.
-func (build Build) Hash(index float64, total float64) (bh BuildHash) {
+func (build Build) Hash(index int, total int) (bh BuildHash) {
 
 	// Log
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
@@ -115,8 +115,8 @@ func (build Build) Hash(index float64, total float64) (bh BuildHash) {
 		return
 	}
 
-	// Log
-	fmt.Println(aurora.Bold(fmt.Sprintf("%3.2f%%", index/total*100)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(hash), "|", time.Since(start).String())
+	// Percentage
+	fmt.Println(aurora.Bold(percent(index, total)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(bh.IPFS), "|", time.Since(start).String())
 
 	return BuildHash{
 		Build: &build,
