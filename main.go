@@ -40,15 +40,17 @@ func main() {
 	// Put LineageOS on IPFS
 	for {
 
-		// Recover
+		// Health
 		recover()
 		pin()
-		unpin()
-		readd()
 
 		// Add new builds
 		unpin()
 		add()
+
+		// Add lost builds
+		unpin()
+		readd()
 
 		// Give some rest to LineageOS
 		time.Sleep(time.Hour)
