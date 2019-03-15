@@ -63,7 +63,10 @@ func (devices Devices) Hash() {
 	start := time.Now()
 
 	for _, build := range builds {
-		build.Hash(index, total).Save()
+		bh := build.Hash(index, total)
+		if &bh != nil {
+			bh.Save()
+		}
 
 		// Estimated Time Left
 		fmt.Println("Estimated Time Left :", aurora.Bold(eta(start, index, total)).String()+".")
