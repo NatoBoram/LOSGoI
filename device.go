@@ -63,8 +63,9 @@ func (devices Devices) Hash() {
 	start := time.Now()
 
 	for _, build := range builds {
-		bh := build.Hash(index, total)
-		if &bh != nil {
+		bh, err := build.Hash(index, total)
+		if err != nil {
+		} else if bh != nil {
 			bh.Save()
 		}
 

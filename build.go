@@ -81,7 +81,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 }
 
 // Hash this build then save it.
-func (build Build) Hash(index int, total int) (bh BuildHash) {
+func (build Build) Hash(index int, total int) (bh *BuildHash, err error) {
 
 	// Log
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
@@ -124,10 +124,10 @@ func (build Build) Hash(index int, total int) (bh BuildHash) {
 	// Percentage
 	fmt.Println(aurora.Bold(percent(index, total)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(bh.IPFS), "|", time.Since(start).String())
 
-	return BuildHash{
+	return &BuildHash{
 		Build: &build,
 		IPFS:  hash,
-	}
+	}, nil
 }
 
 // RMin is the minimum replication factor for a given build.
