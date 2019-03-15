@@ -1,7 +1,9 @@
 #!/bin/sh
 
-FROM=`pwd`
+# Go Get - IPFS
+go get -u -v -fix github.com/ipfs/go-ipfs
 
+# Go Get - IPFS Cluster
 rm -rf ~/go/src/github.com/ipfs/ipfs-cluster
 go get -u -v -fix github.com/ipfs/ipfs-cluster
 
@@ -23,10 +25,20 @@ go get -u -v -fix github.com/zenground0/go-dot
 go get -u -v -fix github.com/prometheus/client_golang/prometheus
 go get -u -v -fix github.com/prometheus/client_golang/prometheus/promhttp
 
-# Make Install
+# SystemCtl Stop
 systemctl --user stop ipfs-cluster
+systemctl --user stop ipfs
+
+# Make Install - IPFS
+cd ~/go/src/github.com/ipfs/go-ipfs
+make install
+
+# Make Install - IPFS Cluster
 cd ~/go/src/github.com/ipfs/ipfs-cluster
 make install
+
+# SystemCtl Start
+systemctl --user start ipfs
 systemctl --user start ipfs-cluster
 
-cd $FROM
+cd
