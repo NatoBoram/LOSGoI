@@ -109,9 +109,15 @@ func (build Build) Hash(index int, total int) (bh BuildHash) {
 	hash := slice[len(slice)-1]
 	hash = strings.Trim(hash, "\n")
 
+	switch hash {
+
 	// Check for "empty folder" hash
-	if hash == hashEmptyFolder {
+	case hashEmptyFolder:
 		unpin()
+		return
+
+	// Check for empty hash
+	case "":
 		return
 	}
 
