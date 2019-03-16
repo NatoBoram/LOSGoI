@@ -40,7 +40,7 @@ func (bd *BuildDate) UnmarshalJSON(b []byte) error {
 }
 
 // MarshalJSON returns the JSON encoding of a `BuildDateTime`.
-func (bd BuildDate) MarshalJSON() ([]byte, error) {
+func (bd *BuildDate) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bd)
 }
 
@@ -60,12 +60,12 @@ func (bdt *BuildDateTime) UnmarshalJSON(b []byte) error {
 }
 
 // MarshalJSON returns the JSON encoding of a `BuildDateTime`.
-func (bdt BuildDateTime) MarshalJSON() ([]byte, error) {
+func (bdt *BuildDateTime) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bdt)
 }
 
 // Select this build from the database.
-func (build Build) Select() (bh BuildHash, err error) {
+func (build *Build) Select() (bh BuildHash, err error) {
 
 	// Prevent null pointers
 	bh = BuildHash{Build: &Build{}}
@@ -81,7 +81,7 @@ func (build Build) Select() (bh BuildHash, err error) {
 }
 
 // Hash this build then save it.
-func (build Build) Hash(index int, total int) (bh *BuildHash, err error) {
+func (build *Build) Hash(index int, total int) (bh *BuildHash, err error) {
 
 	// Log
 	fmt.Println("Processing build", aurora.Green(build.Filename).String()+"...")
@@ -101,7 +101,7 @@ func (build Build) Hash(index int, total int) (bh *BuildHash, err error) {
 		}
 
 		fmt.Println(string(out))
-		return
+		return nil, err
 	}
 
 	// Remove garbage
@@ -125,17 +125,17 @@ func (build Build) Hash(index int, total int) (bh *BuildHash, err error) {
 	fmt.Println(aurora.Bold(percent(index, total)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(bh.IPFS), "|", time.Since(start).String())
 
 	return &BuildHash{
-		Build: &build,
+		Build: build,
 		IPFS:  hash,
 	}, nil
 }
 
 // RMin is the minimum replication factor for a given build.
-func (build Build) RMin() string {
+func (build *Build) RMin() string {
 	return strconv.Itoa(1)
 }
 
 // RMax is the maximum replication factor for a given build.
-func (build Build) RMax() string {
+func (build *Build) RMax() string {
 	return strconv.Itoa(build.Size/(speed*seconds) + 1)
 }

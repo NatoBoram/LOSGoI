@@ -12,8 +12,8 @@ import (
 type Devices map[string][]*Build
 
 // Name every builds from every devices.
-func (devices Devices) Name() {
-	for device, builds := range devices {
+func (devices *Devices) Name() {
+	for device, builds := range *devices {
 		for _, build := range builds {
 			build.Device = device
 		}
@@ -21,8 +21,8 @@ func (devices Devices) Name() {
 }
 
 // Count every builds from every devices.
-func (devices Devices) Count() (count int) {
-	for _, builds := range devices {
+func (devices *Devices) Count() (count int) {
+	for _, builds := range *devices {
 		for range builds {
 			count++
 		}
@@ -31,8 +31,8 @@ func (devices Devices) Count() (count int) {
 }
 
 // Trim trims devices that were already hashed
-func (devices Devices) Trim() (builds []*Build) {
-	for _, device := range devices {
+func (devices *Devices) Trim() (builds []*Build) {
+	for _, device := range *devices {
 		for _, build := range device {
 
 			// Check if it needs to be hashed.
@@ -52,7 +52,7 @@ func (devices Devices) Trim() (builds []*Build) {
 }
 
 // Hash every builds from every devices.
-func (devices Devices) Hash() {
+func (devices *Devices) Hash() {
 
 	// Skip known builds
 	builds := devices.Trim()
@@ -65,7 +65,7 @@ func (devices Devices) Hash() {
 	for _, build := range builds {
 		bh, err := build.Hash(index, total)
 		if err != nil {
-		} else if bh != nil {
+		} else if bh != nil && bh.Build != nil {
 			bh.Save()
 		}
 

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func getBuildsFromRows(rows *sql.Rows) (bhs []BuildHash, err error) {
+func getBuildsFromRows(rows *sql.Rows) (bhs []*BuildHash, err error) {
 	for rows.Next() {
 
 		// Prevent null pointers
@@ -25,14 +25,14 @@ func getBuildsFromRows(rows *sql.Rows) (bhs []BuildHash, err error) {
 		// Dates
 		bh.Build.Date = BuildDate(t1)
 		bh.Build.Datetime = BuildDateTime(t2)
-		bhs = append(bhs, bh)
+		bhs = append(bhs, &bh)
 	}
 
 	err = rows.Err()
 	return
 }
 
-func getLatestBuilds() (bhs []BuildHash, err error) {
+func getLatestBuilds() (bhs []*BuildHash, err error) {
 	rows, err := selectLatest()
 	if err != nil {
 		fmt.Println("Couldn't select the latest builds.")
@@ -43,7 +43,7 @@ func getLatestBuilds() (bhs []BuildHash, err error) {
 	return getBuildsFromRows(rows)
 }
 
-func getOldBuilds() (bhs []BuildHash, err error) {
+func getOldBuilds() (bhs []*BuildHash, err error) {
 	rows, err := selectOld()
 	if err != nil {
 		fmt.Println("Couldn't select older builds.")
@@ -54,7 +54,7 @@ func getOldBuilds() (bhs []BuildHash, err error) {
 	return getBuildsFromRows(rows)
 }
 
-func getLatestBuildsFromDevice(bh BuildHash) (bhs []BuildHash, err error) {
+func getLatestBuildsFromDevice(bh *BuildHash) (bhs []*BuildHash, err error) {
 	rows, err := selectLatestFromDevice(bh)
 	if err != nil {
 		fmt.Println("Couldn't select the latest builds from this device.")
@@ -65,7 +65,7 @@ func getLatestBuildsFromDevice(bh BuildHash) (bhs []BuildHash, err error) {
 	return getBuildsFromRows(rows)
 }
 
-func getOldBuildsFromDevice(bh BuildHash) (bhs []BuildHash, err error) {
+func getOldBuildsFromDevice(bh *BuildHash) (bhs []*BuildHash, err error) {
 	rows, err := selectOldFromDevice(bh)
 	if err != nil {
 		fmt.Println("Couldn't select older builds from this device.")

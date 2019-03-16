@@ -15,7 +15,12 @@ type BuildHash struct {
 }
 
 // Save the BuildHash to the database.
-func (bh BuildHash) Save() {
+func (bh *BuildHash) Save() {
+
+	if bh.Build == nil {
+		fmt.Println("Build is null.")
+		return
+	}
 
 	// Insert
 	_, err := db.Exec("insert into `builds`(`device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", bh.Build.Device, time.Time(bh.Build.Date), time.Time(bh.Build.Datetime), bh.Build.Filename, bh.Build.Filepath, bh.Build.Sha1, bh.Build.Sha256, bh.Build.Size, bh.Build.Type, bh.Build.Version, bh.IPFS)
@@ -45,7 +50,7 @@ func (bh BuildHash) Save() {
 }
 
 // Pin a build to the local IPFS cluster.
-func (bh BuildHash) Pin() {
+func (bh *BuildHash) Pin() {
 
 	out, err := exec.Command("ipfs-cluster-ctl", "pin", "add", bh.IPFS, "--name", bh.Build.Filename, "--replication-min", bh.Build.RMin(), "--replication-max", bh.Build.RMax()).Output()
 	if err != nil {
@@ -63,7 +68,7 @@ func (bh BuildHash) Pin() {
 }
 
 // Unpin a build from the local IPFS cluster.
-func (bh BuildHash) Unpin() {
+func (bh *BuildHash) Unpin() {
 	out, err := exec.Command("ipfs-cluster-ctl", "pin", "rm", bh.IPFS).Output()
 	if err != nil {
 		fmt.Println("Failed to unpin a build from the cluster.")

@@ -86,10 +86,10 @@ func selectOld() (rows *sql.Rows, err error) {
 	return db.Query("SELECT `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` FROM `builds` WHERE `ipfs` NOT IN( SELECT `ipfs` FROM `builds_latest` );")
 }
 
-func selectLatestFromDevice(bh BuildHash) (rows *sql.Rows, err error) {
+func selectLatestFromDevice(bh *BuildHash) (rows *sql.Rows, err error) {
 	return db.Query("SELECT `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` FROM `builds_latest` WHERE `device` = ?;", bh.Build.Device)
 }
 
-func selectOldFromDevice(bh BuildHash) (rows *sql.Rows, err error) {
+func selectOldFromDevice(bh *BuildHash) (rows *sql.Rows, err error) {
 	return db.Query("SELECT `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` FROM `builds` WHERE `ipfs` NOT IN( SELECT `ipfs` FROM `builds_latest` ) AND `device` = ?;", bh.Build.Device)
 }
