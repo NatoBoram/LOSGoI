@@ -9,5 +9,6 @@ var db *sql.DB
 
 // Errors
 var (
-	errHashEmptyFolder = errors.New("this is the hash of an empty folder")
+	errHashEmptyFolder = errors.New("empty folder hash")
+	errInvalidHash     = errors.New("invalid hash")
 )

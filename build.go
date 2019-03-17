@@ -101,7 +101,7 @@ func (build *Build) Hash(index int, total int) (bh *BuildHash, err error) {
 		}
 
 		fmt.Println(string(out))
-		return nil, err
+		return
 	}
 
 	// Remove garbage
@@ -109,25 +109,28 @@ func (build *Build) Hash(index int, total int) (bh *BuildHash, err error) {
 	hash := slice[len(slice)-1]
 	hash = strings.Trim(hash, "\n")
 
-	switch hash {
+	if hash == hashEmptyFolder {
 
-	// Check for "empty folder" hash
-	case hashEmptyFolder:
+		// Check for "empty folder" hash
 		unpin()
-		return
+		return nil, errHashEmptyFolder
+	} else if !strings.Contains(hash, "Qm") {
 
-	// Check for empty hash
-	case "":
-		return
+		// Check for invalid hash
+		fmt.Println("Invalid hash :", hash)
+		return nil, errInvalidHash
+	}
+
+	// Create the object
+	bh = &BuildHash{
+		Build: build,
+		IPFS:  hash,
 	}
 
 	// Percentage
 	fmt.Println(aurora.Bold(percent(index, total)), "|", aurora.Green(build.Filename), "|", aurora.Cyan(bh.IPFS), "|", time.Since(start).String())
 
-	return &BuildHash{
-		Build: build,
-		IPFS:  hash,
-	}, nil
+	return
 }
 
 // RMin is the minimum replication factor for a given build.
