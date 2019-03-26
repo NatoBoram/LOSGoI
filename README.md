@@ -78,7 +78,6 @@ Only one instance of LOSGoI should run on any given IPFS Cluster. However, every
 
 Here's how to get the best results.
 
-1. Setup the master node, preferably the one which will also host the associated website. You'll need to install **IPFS**, **IPFS Cluster**, **MariaDB**, and the necessary for the public-facing website. You can find a functioning website template at [gitlab.com/NatoBoram/lineageos-on-ipfs.com](https://gitlab.com/NatoBoram/lineageos-on-ipfs.com).
-2. Run LOSGoI on the master node
-3. **Wait for LOSGoI to complete its first pinning round.** This can take a day or two, as it needs to hash approximatively 700 LineageOS builds.
-4. Only then you can bootstrap other IPFS Cluster nodes. It's not necessary if you have enough disk space on the original node, but it can help serve larger builds and to pin them faster.
+1. Setup the master node which will also host the associated website. You'll need to install **IPFS**, **IPFS Cluster**, **MariaDB**, and the necessary for the public-facing website. You can find a functioning website template at [gitlab.com/NatoBoram/lineageos-on-ipfs.com](https://gitlab.com/NatoBoram/lineageos-on-ipfs.com).
+2. Bootstrap other IPFS Cluster nodes. It's not necessary if you have enough disk space on the original node, but it can help serve larger builds and to pin them faster.
+3. Run LOSGoI on the master node.
