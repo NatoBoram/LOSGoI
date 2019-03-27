@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Make sure you're not in $GOPATH
+cd
+
 # Go Get - IPFS
 go get -u -v -fix github.com/ipfs/go-ipfs
 
