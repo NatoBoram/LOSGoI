@@ -2,7 +2,7 @@
 Description=Inter-Planetary File System Cluster
 
 [Service]
-ExecStart=/snap/bin/ipfs-cluster-service daemon
+ExecStart=/snap/bin/ipfs-cluster-service daemon --upgrade --consensus crdt
 Restart=on-failure
 
 [Install]
