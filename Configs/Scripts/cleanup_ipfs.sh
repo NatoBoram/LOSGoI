@@ -11,7 +11,10 @@ rm -rf ~/.ipfs-cluster/raft.old.*
 
 # Cleanup IPFS
 ipfs pin ls -q --type recursive | xargs ipfs pin rm
+ipfs repo gc
 
 # Start
 systemctl --user start ipfs
 systemctl --user start ipfs-cluster
+
+exit
