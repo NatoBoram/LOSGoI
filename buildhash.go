@@ -69,5 +69,5 @@ func (bh *BuildHash) Pin() {
 
 // Unpin a build from the local IPFS cluster.
 func (bh *BuildHash) Unpin() {
-	exec.Command("ipfs-cluster-ctl", "pin", "rm", bh.IPFS).Start()
+	exec.Command("ipfs-cluster-ctl", "pin", "rm", bh.IPFS).Run()
 }
