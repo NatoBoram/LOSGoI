@@ -29,4 +29,8 @@ const (
 	seconds = 60
 )
 
-const concurrency = 4
+// Paralellization
+const (
+	coHashPin   = 4
+	coHashUnpin = 4
+)
