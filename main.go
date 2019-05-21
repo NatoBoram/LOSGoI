@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -68,18 +69,8 @@ func initIPFS() (err error) {
 	}
 	fmt.Println(aurora.Bold("IPFS :"), aurora.Blue(path))
 
-	// Use experimental features
-	exec.Command("ipfs", "config", "--json", "Experimental.FilestoreEnabled", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Experimental.Libp2pStreamMounting", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Experimental.P2pHttpProxy", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Experimental.QUIC", "true").Run()
+	// Enable sharding
 	exec.Command("ipfs", "config", "--json", "Experimental.ShardingEnabled", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Experimental.UrlstoreEnabled", "true").Run()
-
-	// Enable new Swarm features
-	exec.Command("ipfs", "config", "--json", "Swarm.EnableAutoNATService", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Swarm.EnableAutoRelay", "true").Run()
-	exec.Command("ipfs", "config", "--json", "Swarm.EnableRelayHop", "true").Run()
 
 	// Check for IPFS Cluster Service
 	path, err = exec.LookPath("ipfs-cluster-service")
@@ -185,7 +176,6 @@ func getDevices() (devices Devices, err error) {
 
 	// Builds are received in a map.
 	devices.Name()
-
 	return
 }
 
@@ -198,9 +188,27 @@ func pin() {
 		return
 	}
 
-	for _, bh := range bhs {
-		bh.Pin()
+	// Create queue
+	bhc := make(chan *BuildHash, coHashPin)
+	go func() {
+		for _, bh := range bhs {
+			bhc <- bh
+		}
+		close(bhc)
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(len(bhs))
+
+	// Pin asynchronously
+	for bh := range bhc {
+		go func(bh *BuildHash) {
+			bh.Pin()
+			wg.Done()
+		}(bh)
 	}
+
+	wg.Wait()
 
 	fmt.Println("Pinned latest builds in", aurora.Bold(time.Since(start).String()).String()+".")
 }
@@ -214,9 +222,27 @@ func unpin() {
 		return
 	}
 
-	for _, bh := range bhs {
-		bh.Unpin()
+	// Create queue
+	bhc := make(chan *BuildHash, coHashUnpin)
+	go func() {
+		for _, bh := range bhs {
+			bhc <- bh
+		}
+		close(bhc)
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(len(bhs))
+
+	// Unpin asynchronously
+	for bh := range bhc {
+		go func(bh *BuildHash) {
+			bh.Unpin()
+			wg.Done()
+		}(bh)
 	}
+
+	wg.Wait()
 
 	fmt.Println("Unpinned old builds in", aurora.Bold(time.Since(start).String()).String()+".")
 
