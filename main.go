@@ -201,11 +201,13 @@ func pin() {
 	wg.Add(len(bhs))
 
 	// Pin asynchronously
-	for bh := range bhc {
-		go func(bh *BuildHash) {
-			bh.Pin()
-			wg.Done()
-		}(bh)
+	for c := 1; c <= coHashPin; c++ {
+		go func() {
+			for bh := range bhc {
+				bh.Pin()
+				wg.Done()
+			}
+		}()
 	}
 
 	wg.Wait()
@@ -235,11 +237,13 @@ func unpin() {
 	wg.Add(len(bhs))
 
 	// Unpin asynchronously
-	for bh := range bhc {
-		go func(bh *BuildHash) {
-			bh.Unpin()
-			wg.Done()
-		}(bh)
+	for c := 1; c <= coHashUnpin; c++ {
+		go func() {
+			for bh := range bhc {
+				bh.Unpin()
+				wg.Done()
+			}
+		}()
 	}
 
 	wg.Wait()
