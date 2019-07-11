@@ -16,5 +16,3 @@ ipfs repo gc
 # Start
 systemctl --user start ipfs
 systemctl --user start ipfs-cluster
-
-exit
