@@ -1,33 +1,53 @@
 #!/bin/sh
 
-# Make sure you're not in $GOPATH
+HERE=`pwd`
 cd
 
-# Rm
-rm -rf ~/go/src/github.com/ipfs/go-ipfs
-rm -rf ~/go/src/github.com/ipfs/ipfs-cluster
+# Discard changes - IPFS
+cd ~/go/src/github.com/ipfs/go-ipfs
+git checkout -- .
 
-# Go Get
+# Discard changes - IPFS Cluster
+cd ~/go/src/github.com/ipfs/ipfs-cluster
+git checkout -- .
+
+cd
+
+# Update dependencies
 go get -u -v github.com/ipfs/go-ipfs
 go get -u -v github.com/ipfs/ipfs-cluster
 
-# SystemCtl Stop
+# Stop services
 systemctl --user stop ipfs-cluster
 systemctl --user stop ipfs
 
-# Cleanup State
+# Remove old states
 rm -rf ~/.ipfs-cluster/raft.old.*
 
-# Make Install - IPFS
+# Install IPFS
 cd ~/go/src/github.com/ipfs/go-ipfs
 GO111MODULE=on make install
 
-# Make Install - IPFS Cluster
+# Install IPFS Cluster
 cd ~/go/src/github.com/ipfs/ipfs-cluster
 GO111MODULE=on make install
 
-# SystemCtl Start
+# Start services
 systemctl --user start ipfs
 systemctl --user start ipfs-cluster
+ping lineageos-on-ipfs.com -c 15
 
-cd
+cd $HERE
+
+# Maintenance
+ipfs-cluster-ctl sync
+ipfs-cluster-ctl recover --local
+ipfs repo gc
+
+# Version
+ipfs version --all
+ipfs-cluster-service version
+
+# Connection
+ipfs-cluster-ctl peers ls
+journalctl --user -fu ipfs-cluster --output cat

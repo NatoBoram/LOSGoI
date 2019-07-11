@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Remove
+rm -rf ~/go/src/github.com/ipfs/go-ipfs
+
 # Go Get
 go get -u -v -fix github.com/ipfs/go-ipfs
 
