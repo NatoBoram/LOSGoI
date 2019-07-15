@@ -8,12 +8,6 @@
 
 It provides a way to access LineageOS' builds after they're removed from the website, assuming there are people who pinned the hashes. **As such, it is an unreliable service to be used only as a proof-of-concept.**
 
-## URLStore
-
-[URLStore](https://github.com/ipfs/go-ipfs/blob/master/docs/experimental-features.md#ipfs-urlstore) is an experimental feature. If it becomes unsupported from future IPFS versions, then this repository will be archived.
-
-This program will invoke the command `ipfs urlstore add <url>`. As such, you must have [IPFS](https://github.com/ipfs/go-ipfs) installed.
-
 ## IPFS Cluster
 
 This program will attempt to pin the hashes it created to the local [IPFS Cluster](https://github.com/ipfs/ipfs-cluster) with the command `ipfs-cluster-ctl pin add <hash> --name <build> --replication-min <min> --replication-max <max>`.
