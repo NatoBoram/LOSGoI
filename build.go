@@ -54,7 +54,7 @@ func (bdt *BuildDateTime) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	epochTime := time.Unix(sec, 0)
+	epochTime := time.Unix(sec, 0).In(time.UTC)
 	*bdt = BuildDateTime(epochTime)
 	return nil
 }
