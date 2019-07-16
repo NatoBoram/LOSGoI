@@ -110,15 +110,14 @@ func (build *Build) Hash(index int, total int) (bh *BuildHash, err error) {
 	hash = strings.Trim(hash, "\n")
 
 	if hash == hashEmptyFolder {
-
-		// Check for "empty folder" hash
+		err = errHashEmptyFolder
+		fmt.Println("Empty folder hash :", hash)
 		unpin()
-		return nil, errHashEmptyFolder
+		return nil, err
 	} else if !strings.Contains(hash, "Qm") {
-
-		// Check for invalid hash
+		err = errInvalidHash
 		fmt.Println("Invalid hash :", hash)
-		return nil, errInvalidHash
+		return nil, err
 	}
 
 	// Create the object
