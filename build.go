@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -74,25 +73,6 @@ func (build *Build) Select() (bh BuildHash, err error) {
 	var t2 time.Time
 
 	err = db.QueryRow("select `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `device` = ? and `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", build.Device, time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&bh.Build.Device, &t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
-	if err == sql.ErrNoRows {
-		res, err := db.Exec("delete from `builds` where `filename` = ?;", build.Filename)
-		if err != nil {
-			return bh, err
-		}
-
-		count, err := res.RowsAffected()
-		if err != nil {
-			return bh, err
-		}
-
-		if count > 0 {
-			fmt.Println("Deleted", aurora.Green(build.Filename).String()+".")
-		}
-
-		return bh, err
-	} else if err != nil {
-		return
-	}
 
 	bh.Build.Date = BuildDate(t1)
 	bh.Build.Datetime = BuildDateTime(t2)
