@@ -36,7 +36,7 @@ func (bd *BuildDate) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	*bd = BuildDate(t)
+	*bd = BuildDate(t.In(time.UTC))
 	return nil
 }
 
