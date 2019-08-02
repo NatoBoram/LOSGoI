@@ -23,8 +23,8 @@ func getBuildsFromRows(rows *sql.Rows) (bhs []*BuildHash, err error) {
 		}
 
 		// Dates
-		bh.Build.Date = BuildDate(t1)
-		bh.Build.Datetime = BuildDateTime(t2)
+		bh.Build.Date = BuildDate{t1}
+		bh.Build.Datetime = BuildDateTime{t2}
 		bhs = append(bhs, &bh)
 	}
 

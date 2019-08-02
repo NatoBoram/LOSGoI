@@ -26,7 +26,7 @@ type Build struct {
 }
 
 // BuildDate is the `Date` inside a `Build`.
-type BuildDate time.Time
+type BuildDate struct{ time.Time }
 
 // UnmarshalJSON parses a formatted string and returns the time value it represents.
 func (bd *BuildDate) UnmarshalJSON(b []byte) error {
@@ -35,7 +35,7 @@ func (bd *BuildDate) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	*bd = BuildDate(t.In(time.UTC))
+	*bd = BuildDate{t.In(time.UTC)}
 	return nil
 }
 
@@ -45,7 +45,7 @@ func (bd *BuildDate) MarshalJSON() ([]byte, error) {
 }
 
 // BuildDateTime is the `Datetime` inside a `Build`.
-type BuildDateTime time.Time
+type BuildDateTime struct{ time.Time }
 
 // UnmarshalJSON parses a formatted string and returns the time value it represents.
 func (bdt *BuildDateTime) UnmarshalJSON(b []byte) error {
@@ -55,7 +55,7 @@ func (bdt *BuildDateTime) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	epochTime := time.Unix(sec, 0).In(time.UTC)
-	*bdt = BuildDateTime(epochTime)
+	*bdt = BuildDateTime{epochTime}
 	return nil
 }
 
@@ -72,10 +72,10 @@ func (build *Build) Select() (bh BuildHash, err error) {
 	var t1 time.Time
 	var t2 time.Time
 
-	err = db.QueryRow("select `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `device` = ? and `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", build.Device, time.Time(build.Date), time.Time(build.Datetime), build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&bh.Build.Device, &t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
+	err = db.QueryRow("select `device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs` from `builds` where `device` = ? and `date` = ? and `datetime` = ? and `filename` = ? and `filepath` = ? and `sha1` = ? and `sha256` = ? and `size` = ? and `type` = ? and `version` = ?;", build.Device, build.Date.Time, build.Datetime, build.Filename, build.Filepath, build.Sha1, build.Sha256, build.Size, build.Type, build.Version).Scan(&bh.Build.Device, &t1, &t2, &bh.Build.Filename, &bh.Build.Filepath, &bh.Build.Sha1, &bh.Build.Sha256, &bh.Build.Size, &bh.Build.Type, &bh.Build.Version, &bh.IPFS)
 
-	bh.Build.Date = BuildDate(t1)
-	bh.Build.Datetime = BuildDateTime(t2)
+	bh.Build.Date = BuildDate{t1}
+	bh.Build.Datetime = BuildDateTime{t2}
 
 	return
 }

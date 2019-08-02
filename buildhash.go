@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os/exec"
-	"time"
 
 	"github.com/logrusorgru/aurora"
 )
@@ -23,7 +22,7 @@ func (bh *BuildHash) Save() {
 	}
 
 	// Insert
-	_, err := db.Exec("insert into `builds`(`device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", bh.Build.Device, time.Time(bh.Build.Date), time.Time(bh.Build.Datetime), bh.Build.Filename, bh.Build.Filepath, bh.Build.Sha1, bh.Build.Sha256, bh.Build.Size, bh.Build.Type, bh.Build.Version, bh.IPFS)
+	_, err := db.Exec("insert into `builds`(`device`, `date`, `datetime`, `filename`, `filepath`, `sha1`, `sha256`, `size`, `type`, `version`, `ipfs`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", bh.Build.Device, bh.Build.Date.Time, bh.Build.Datetime.Time, bh.Build.Filename, bh.Build.Filepath, bh.Build.Sha1, bh.Build.Sha256, bh.Build.Size, bh.Build.Type, bh.Build.Version, bh.IPFS)
 	if err != nil {
 		fmt.Println("Couldn't save build", aurora.Green(bh.Build.Filename).String()+".")
 		fmt.Println(err.Error())
