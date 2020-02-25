@@ -1,13 +1,43 @@
-image: golang:1.12
+image: golang:1.13
 
 before_script:
-  - go get -u -v -fix gitlab.com/NatoBoram/LOSGoI
+  - go get -u -v gitlab.com/NatoBoram/LOSGoI
   - go clean
 
 build:
   stage: build
   script:
-    - go build
+    - go build -o build/losgoi
+  artifacts:
+    paths:
+      - build/losgoi
+
+cross-compile:
+  stage: build
+  script:
+    - ./scripts/cross-compile.sh
+  artifacts:
+    paths:
+      - build/losgoi-darwin-386
+      - build/losgoi-darwin-amd64
+      - build/losgoi-darwin-arm
+      - build/losgoi-darwin-arm64
+      - build/losgoi-linux-386
+      - build/losgoi-linux-amd64
+      - build/losgoi-linux-arm
+      - build/losgoi-linux-arm64
+      - build/losgoi-windows-386.exe
+      - build/losgoi-windows-amd64.exe
+      - build/losgoi-windows-arm.exe
+  only:
+    - master
+    - develop
+
+lint:
+  stage: test
+  script:
+    - go get -u golang.org/x/lint/golint
+    - golint -set_exit_status ./...
 
 test:
   stage: test

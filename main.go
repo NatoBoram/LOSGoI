@@ -102,10 +102,11 @@ func initDatabase() (err error) {
 	if err != nil {
 		fmt.Println("Could not load the database configuration.")
 		fmt.Println(err.Error())
-		err = database.template()
-		if err != nil {
+		terr := database.template()
+		if terr != nil {
 			fmt.Println("Could not write a database template.")
 			fmt.Println(err.Error())
+			return terr
 		}
 		return
 	}
