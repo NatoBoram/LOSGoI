@@ -1,4 +1,4 @@
-package main
+package losgoi
 
 import "os"
 
@@ -14,8 +14,8 @@ const (
 
 // Permissions
 const (
-	permPrivateDirectory os.FileMode = 0700
-	permPrivateFile      os.FileMode = 0600
+	PermPrivateDirectory os.FileMode = 0700
+	PermPrivateFile      os.FileMode = 0600
 )
 
 // Special Hashes
