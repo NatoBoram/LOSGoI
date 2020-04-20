@@ -1,0 +1,16 @@
+root = true
+
+[*]
+
+# Current Universal Properties
+indent_style = tab
+indent_size = 4
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Ideas for Domain-Specific Properties
+quote_type = double
+curly_bracket_next_line = false
+indent_brace_style = K&R
+continuation_indent_size = 4
